@@ -1,0 +1,53 @@
+{
+  "jest": {
+    "transform": {
+      "^.+\\.js$": "<rootDir>/node_modules/babel-jest",
+      ".(ts|tsx)": "<rootDir>/node_modules/ts-jest/preprocessor.js"
+    },
+    "testRegex": "(/__tests__/.*|\\.(test|spec))\\.(ts|tsx|js)$",
+    "moduleFileExtensions": [
+      "js",
+      "jsx"
+    ]
+  },
+  "name": "peer-up",
+  "version": "1.0.0",
+  "description": "Suit Up! ...no, wait: Peer Up! An open, decentralized service for discovery of services",
+  "main": "./dist/index.js",
+  "types": "./dist/bunq-api.d.ts",
+  "dependencies": {
+    "fs-extra": "^3.0.1",
+    "moment": "^2.18.1",
+    "request-promise": "^4.2.1",
+    "restify": "^4.3.0",
+    "typescript": "^2.3.2"
+  },
+  "devDependencies": {
+    "@types/jest": "^19.2.3",
+    "@types/node": "^7.0.18",
+    "babel-jest": "^20.0.0",
+    "jest": "^20.0.3",
+    "ts-jest": "^20.0.3"
+  },
+  "scripts": {
+    "prepublish": "npm run tsc",
+    "test": "jest --coverage",
+    "tsc": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cofdev0/peer-up.git"
+  },
+  "keywords": [
+    "peer to peer",
+    "json",
+    "REST",
+    "peer discovery"
+  ],
+  "author": "cofdev0",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/cofdev0/peer-up"
+  },
+  "homepage": "https://github.com/cofdev0/peer-up"
+}
