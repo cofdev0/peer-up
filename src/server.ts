@@ -10,7 +10,7 @@ const fs = require('fs-extra');
 const peerUpPort = 56633;
 const maxPeerServices = 100;
 const serviceInterval = 5000;
-
+const myServicesFilename = "./my-services.json";
 
 export class Server {
 
@@ -25,7 +25,11 @@ export class Server {
         this.server.use(restify.plugins.bodyParser());
         this.server.post('/peer-up', (req, res, next)=>{this.onPost(req, res, next)});
 
-        this.myServices = JSON.parse(fs.readFileSync("./my-services.json"));
+        if(!fs.existsSync(myServicesFilename)) {
+            console.log("please create file with your services '"+myServicesFilename+"' like example file!");
+            process.exit(-1);
+        }
+        this.myServices = JSON.parse(fs.readFileSync(myServicesFilename));
         this.peerServices = CBuffer(maxPeerServices);
         this.readRemoteServicesFromFile();
         this.addPeerService({"name":"peer-up","version":"1.0.0","url":"45.32.186.169:"+peerUpPort});
