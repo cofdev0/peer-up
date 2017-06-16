@@ -4,6 +4,21 @@
       "name":"peer-up",
       "version":"1.0.0",
       "url":"127.0.0.1:56633"
+    },
+    {
+      "name":"stun",
+      "version":"*",
+      "url":"stun:stun.l.google.com:19302"
+    },
+    {
+      "name":"stun",
+      "version":"*",
+      "url":"stun:stun.cablenet-as.net:3478"
+    },
+    {
+      "name":"stun",
+      "version":"*",
+      "url":"stun:stun.vodafone.ro:3478"
     }
   ]
 }
