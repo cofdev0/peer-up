@@ -1,5 +1,5 @@
 const restify = require('restify');
-const random = require('node-random');
+const random = require('random-js')();
 
 // import * as restify from 'restify';
 const assert = require('assert');
@@ -120,10 +120,9 @@ export class Server {
             peers.push(entry);
         });
         if(peers.length==0) return;
-        random.numbers({"number":1,"minimum":0,"maximum":peers.length-1}, (error, data)=>{
-            if(error) throw error;
-            this.checkPeerUpService(peers[data[0]].url);
-        });
+
+        const selected = random(0,peers.length-1);
+        this.checkPeerUpService(peers[selected].url);
 
     }
 
