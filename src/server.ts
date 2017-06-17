@@ -11,8 +11,10 @@ const fs = require('fs-extra');
 const peerUpPort = 56633;
 const maxPeerServices = 100;
 const serviceInterval = 5000;
-const myServicesFilename = "./my-services.json";
-const seedUrl = "http://45.32.186.169";
+const myServicesFilename:string = "./my-services.json";
+const peerServicesFilename:string = "./peer-services.json";
+const seedUrl:string = "http://45.32.186.169";
+const postPeerUpKey:string = "peer-up-url";
 
 export class Server {
 
@@ -56,16 +58,16 @@ export class Server {
 
     onPost(req, res, next) {
         // let remote = req.headers['x-forwarded-for']  || req.connection.remoteAddress;
-        let remotePeerUp = {
-            name:'peer-up',
-            version:'1.0.0',
-            url:req.connection.remoteAddress+':'+peerUpPort
-        };
-        this.addPeerService(remotePeerUp);
-        this.writePeerServiceToFile();
+
         console.log("from ip "+req.connection.remoteAddress);
         console.log("received post:\n"+JSON.stringify(req.params));
 
+        if(req.params[postPeerUpKey]) {
+            this.addPeerUpFromIncomingPost(req.params[postPeerUpKey]);
+        }
+
+
+        //todo: extract method
         let max = req.params.max ? req.params.max : 1;
         let index=0;
         req.params.services = [];
@@ -89,9 +91,19 @@ export class Server {
         return next();
     };
 
+    addPeerUpFromIncomingPost(peerUpUrl:string) {
+        let remotePeerUp = {
+            name:'peer-up',
+            version:'1.0.0',
+            url:peerUpUrl
+        };
+        if(this.isKnownPeerService(remotePeerUp)) return;
+        this.addPeerService(remotePeerUp);
+        this.writePeerServiceToFile();
+    }
 
     writePeerServiceToFile() {
-        fs.writeFileSync("remote-services.json", JSON.stringify(this.peerServices.toArray()));
+        fs.writeFileSync(peerServicesFilename, JSON.stringify(this.peerServices.toArray()));
     }
 
     readRemoteServicesFromFile() {
@@ -126,7 +138,8 @@ export class Server {
         });
 
         try {
-            client.post('/peer-up', {max:'5'},  (err, req, res, obj)=> {
+            const peerUpUrl:string = "http://"+this.myIp+":"+peerUpPort;
+            client.post('/peer-up', {max:'5',[postPeerUpKey]:peerUpUrl},  (err, req, res, obj)=> {
                 if(!obj) return;
                 if(!obj.services) return;
                 console.log("peer server <"+peerUrl+"> returned obj: %j", obj);
@@ -150,11 +163,11 @@ export class Server {
         if(service.url.indexOf("localhost")!=-1) return;
         if(service.url.length==0) return;
         if(service.name.length==0) return;
-        let found=this.isKnownPeerService(service);
-        if(!found) {
-            console.log("added new peer service: "+JSON.stringify(service));
-            this.peerServices.push(service);
-        }
+        if(this.isMyService(service)) return;
+        if(this.isKnownPeerService(service)) return;
+
+        this.peerServices.push(service);
+        console.log("added new peer service: "+JSON.stringify(service));
     }
 
     isKnownPeerService(service):boolean {
@@ -162,6 +175,18 @@ export class Server {
         this.peerServices.forEach(function(entry) {
             if(service.url!==entry.url) return;
             if(service.name!==entry.name) return;
+            //todo: version check
+            found=true;
+        });
+        return found;
+    }
+
+    isMyService(service):boolean {
+        let found=false;
+        this.myServices.services.forEach(function(entry){
+            if(service.url!==entry.url) return;
+            if(service.name!==entry.name) return;
+            //todo: version check
             found=true;
         });
         return found;
