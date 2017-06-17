@@ -136,6 +136,7 @@ export class Server {
             client.post('/peer-up', {max:'5'}, function (err, req, res, obj) {
                 console.log('peer server returned obj: %j', obj);
                 this.addPeerService(obj);
+                this.writePeerServiceToFile();
             });
         }catch(error) {
             console.log("peer:"+peerUrl);
