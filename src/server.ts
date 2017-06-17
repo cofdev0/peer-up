@@ -8,18 +8,25 @@ const clients = require('restify-clients');
 const CBuffer = require('CBuffer');
 const fs = require('fs-extra');
 
-const peerUpPort = 56633;
-const maxPeerServices = 100;
-const serviceInterval = 8000;
+const defaultPeerUpPort = 56633;
+const defaultMaxPeerServices = 100;
+const defaultServiceInterval = 8000;
 const myServicesFilename:string = "./my-services.json";
 const peerServicesFilename:string = "./peer-services.json";
-const seedUrl:string = "http://45.32.186.169";
+const seedUrl:string = "http://45.32.186.169:"+defaultPeerUpPort;
 const postPeerUpKey:string = "peer-up-url";
 
 export class Server {
 
-    constructor() {
+    constructor(config={
+        peerUpPort:defaultPeerUpPort,
+        maxPeerServices:defaultMaxPeerServices,
+        serviceInterval:defaultServiceInterval
+    }) {
 
+        this.peerUpPort=config.peerUpPort || defaultPeerUpPort;
+        this.maxPeerServices=config.maxPeerServices || defaultMaxPeerServices;
+        this.serviceInterval=config.serviceInterval || defaultServiceInterval;
         this.server = restify.createServer({
             name: 'peer-up',
             version: '1.0.0'
@@ -34,23 +41,26 @@ export class Server {
             process.exit(-1);
         }
         this.myServices = JSON.parse(fs.readFileSync(myServicesFilename));
-        this.peerServices = CBuffer(maxPeerServices);
+        this.peerServices = CBuffer(this.maxPeerServices);
         this.readRemoteServicesFromFile();
 
         this.getMyIp().then(()=>{
             if(seedUrl.indexOf(this.myIp)==-1)
-                this.addPeerService({"name":"peer-up","version":"1.0.0","url":seedUrl+":"+peerUpPort});
+                this.addPeerService({"name":"peer-up","version":"1.0.0","url":seedUrl});
         });
     }
 
 
+    serviceInterval;
+    maxPeerServices;
+    peerUpPort;
     myServices;
     peerServices;
     server;
     myIp:string;
 
     listen() {
-        this.server.listen(peerUpPort,  ()=>{
+        this.server.listen(this.peerUpPort,  ()=>{
             console.log('%s listening at %s', this.server.name, this.server.url);
         });
         this.installServiceInterval();
@@ -119,7 +129,7 @@ export class Server {
     }
 
     installServiceInterval() {
-        setInterval(()=>{this.onTimeToCheckForServices()}, serviceInterval);
+        setInterval(()=>{this.onTimeToCheckForServices()}, this.serviceInterval);
     }
 
     onTimeToCheckForServices() {
@@ -142,8 +152,7 @@ export class Server {
         });
 
         try {
-            const peerUpUrl:string = "http://"+this.myIp+":"+peerUpPort;
-            client.post('/peer-up', {max:'3',[postPeerUpKey]:peerUpUrl},  (err, req, res, obj)=> {
+            client.post('/peer-up', {max:'3',[postPeerUpKey]:this.getMyPeerUpUrl()},  (err, req, res, obj)=> {
                 if(!obj) return;
                 if(!obj.services) return;
                 //console.log("peer server <"+peerUrl+"> returned obj: %j", obj);
@@ -161,6 +170,9 @@ export class Server {
 
     }
 
+    getMyPeerUpUrl():string {
+        return "http://"+this.myIp+":"+this.peerUpPort;
+    }
 
     addPeerService(service) {
         if(service.url.indexOf("127.0.0.1")!=-1) return;
@@ -186,6 +198,7 @@ export class Server {
     }
 
     isMyService(service):boolean {
+        if(service.url===this.getMyPeerUpUrl()) return true;
         let found=false;
         this.myServices.services.forEach(function(entry){
             if(service.url!==entry.url) return;
