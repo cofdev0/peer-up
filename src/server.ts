@@ -12,7 +12,7 @@ const peerUpPort = 56633;
 const maxPeerServices = 100;
 const serviceInterval = 5000;
 const myServicesFilename = "./my-services.json";
-const seedIp = "45.32.186.169";
+const seedUrl = "http://45.32.186.169";
 
 export class Server {
 
@@ -36,8 +36,8 @@ export class Server {
         this.readRemoteServicesFromFile();
 
         this.getMyIp().then(()=>{
-            if(seedIp.indexOf(this.myIp)==-1)
-                this.addPeerService({"name":"peer-up","version":"1.0.0","url":seedIp+":"+peerUpPort});
+            if(seedUrl.indexOf(this.myIp)==-1)
+                this.addPeerService({"name":"peer-up","version":"1.0.0","url":seedUrl+":"+peerUpPort});
         });
     }
 
@@ -140,7 +140,7 @@ export class Server {
         });
 
         try {
-            client.post('/peer-up', {max:'5'}, function (err, req, res, obj) {
+            client.post('/peer-up', {max:'5'},  (err, req, res, obj)=> {
                 console.log('peer server returned obj: %j', obj);
                 this.addPeerService(obj);
                 this.writePeerServiceToFile();
