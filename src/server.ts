@@ -66,30 +66,34 @@ export class Server {
             this.addPeerUpFromIncomingPost(req.params[postPeerUpKey]);
         }
 
-
-        //todo: extract method
-        let max = req.params.max ? req.params.max : 1;
-        let index=0;
-        req.params.services = [];
-
-        this.peerServices.forEach(function(entry){
-            if(index>=max) return;
-            if(req.params.service && entry.name != req.params.service) return;
-            req.params.services.push(entry);
-            index++;
-        });
-
-        this.myServices.services.forEach(function(entry) {
-            if(index>=max) return;
-            if(req.params.service && entry.name != req.params.service) return;
-            req.params.services.push(entry);
-            index++;
-        });
-
-        req.params.count=index;
+        const selection = this.createSelectionByName(req.params);
+        Server.pushRandomly(selection, req.params);
         res.send(req.params);
         return next();
     };
+
+    static pushRandomly(selection, params) {
+        let max = params.max ? params.max : 1;
+        params.services = [];
+        for(let i=0; i<max; i++) {
+            let index=random.integer(0,selection.length-1);
+            params.services.push(selection[index]);
+        }
+    }
+
+    createSelectionByName(params):any {
+        let selection = [];
+        this.myServices.services.forEach(function(entry) {
+            if(params.service && entry.name != params.service) return;
+            selection.push(entry);
+        });
+
+        this.peerServices.forEach(function(entry){
+            if(params.service && entry.name != params.service) return;
+            selection.push(entry);
+        });
+        return selection;
+    }
 
     addPeerUpFromIncomingPost(peerUpUrl:string) {
         let remotePeerUp = {
@@ -127,7 +131,7 @@ export class Server {
         });
         if(peers.length==0) return;
 
-        const selected = peers.length==1 ? 0 : random(0,peers.length-1);
+        const selected = peers.length==1 ? 0 : random.integer(0,peers.length-1);
         this.checkPeerUpService(peers[selected].url);
     }
 
@@ -139,7 +143,7 @@ export class Server {
 
         try {
             const peerUpUrl:string = "http://"+this.myIp+":"+peerUpPort;
-            client.post('/peer-up', {max:'5',[postPeerUpKey]:peerUpUrl},  (err, req, res, obj)=> {
+            client.post('/peer-up', {max:'3',[postPeerUpKey]:peerUpUrl},  (err, req, res, obj)=> {
                 if(!obj) return;
                 if(!obj.services) return;
                 console.log("peer server <"+peerUrl+"> returned obj: %j", obj);
