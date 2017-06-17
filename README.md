@@ -36,9 +36,9 @@ vi my-services.json
     ```
     import {Server as PeerUpServer} from 'peer-up/dist/index';
     const server:PeerUpServer = new PeerUpServer({
-        peerUpPort:56633,
-        maxPeerServices:100,
-        serviceInterval:8000
+        peerUpPort:56633,       // port this server will listen at
+        maxPeerServices:100,    // maximum number of peer services to store
+        serviceInterval:8000    // interval in ms between requests to gather more peer services
     });
     server.listen();
     ```
