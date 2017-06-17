@@ -121,7 +121,7 @@ export class Server {
         });
         if(peers.length==0) return;
 
-        const selected = random(0,peers.length-1);
+        const selected = peers.length==1 ? 0 : random(0,peers.length-1);
         this.checkPeerUpService(peers[selected].url);
 
     }
@@ -132,11 +132,16 @@ export class Server {
             version: '~1.0'
         });
 
-        client.post('/peer-up', {max:'5'}, function (err, req, res, obj) {
-            // assert.ifError(err);
-            console.log('peer server returned obj: %j', obj);
-            this.addPeerService(obj);
-        });
+        try {
+            client.post('/peer-up', {max:'5'}, function (err, req, res, obj) {
+                console.log('peer server returned obj: %j', obj);
+                this.addPeerService(obj);
+            });
+        }catch(error) {
+            console.log("peer:"+peerUrl);
+            console.log(""+error);
+        }
+
     }
 
 }
