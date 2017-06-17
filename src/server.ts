@@ -45,6 +45,7 @@ export class Server {
     myServices;
     peerServices;
     server;
+    myIp:string;
 
     listen() {
         this.server.listen(peerUpPort,  ()=>{
@@ -88,20 +89,6 @@ export class Server {
         return next();
     };
 
-    addPeerService(service) {
-        let found=false;
-        this.peerServices.forEach(function(entry) {
-            if(service.url!=entry.url) return;
-            if(service.name!=entry.name) return;
-            found=true;
-        });
-        if(service.url.indexOf("127.0.0.1")!=-1) return;
-        if(service.url.indexOf("localhost")!=-1) return;
-        if(!found) {
-            console.log("added new service: "+JSON.stringify(service));
-            this.peerServices.push(service);
-        }
-    }
 
     writePeerServiceToFile() {
         fs.writeFileSync("remote-services.json", JSON.stringify(this.peerServices.toArray()));
@@ -130,7 +117,6 @@ export class Server {
 
         const selected = peers.length==1 ? 0 : random(0,peers.length-1);
         this.checkPeerUpService(peers[selected].url);
-
     }
 
     checkPeerUpService(peerUrl:string) {
@@ -141,8 +127,14 @@ export class Server {
 
         try {
             client.post('/peer-up', {max:'5'},  (err, req, res, obj)=> {
-                console.log('peer server returned obj: %j', obj);
-                this.addPeerService(obj);
+                if(!obj) return;
+                console.log("peer server <"+peerUrl+"> returned obj: %j", obj);
+                if(!obj.services) return;
+                if(obj.services.constructor !== Array) return;
+                if(obj.services.length==0) return;
+                obj.services.forEach((entry)=>{
+                    this.addPeerService(entry);
+                });
                 this.writePeerServiceToFile();
             });
         }catch(error) {
@@ -152,7 +144,28 @@ export class Server {
 
     }
 
-    myIp:string;
+
+    addPeerService(service) {
+        if(service.url.indexOf("127.0.0.1")!=-1) return;
+        if(service.url.indexOf("localhost")!=-1) return;
+        if(service.url.length==0) return;
+        if(service.name.length==0) return;
+        let found=this.isKnownPeerService(service);
+        if(!found) {
+            console.log("added new peer service: "+JSON.stringify(service));
+            this.peerServices.push(service);
+        }
+    }
+
+    isKnownPeerService(service):boolean {
+        let found=false;
+        this.peerServices.forEach(function(entry) {
+            if(service.url!==entry.url) return;
+            if(service.name!==entry.name) return;
+            found=true;
+        });
+        return found;
+    }
 
     getMyIp():Promise<any> {
         return new Promise((resolve, reject)=>{
