@@ -35,10 +35,14 @@ vi my-services.json
     - create a my-services.json to publish your own services and use the peer-up server in your project with
     ```
     import {Server} from 'peer-up/dist/index';
-    const server:Server = new Server();
+    const server:Server = new Server({
+        peerUpPort:56633,     // port this server will listen at
+        maxPeerServices:100,  // maximum number of peer services to store
+        serviceInterval:8000  // interval in ms between requests to gather more peer services
+    });
     server.listen();
     ```
-    - now you can receive connection details for all kind of services by asking the server you started for a peer that offers this service. For instance request a STUN server:
+    - now you can receive connection details for all kinds of services by asking the server you started for a peer that offers this service. For instance request a STUN server:
     ```
     const clients = require('restify-clients');
     const client = clients.createJsonClient({
