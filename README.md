@@ -5,7 +5,7 @@ Suit Up! ...no, wait for it: Peer Up! An open, decentralized service for discove
 ## why?
 Even if your goal is to have a decentralised peer to peer network, some server based infrastructure might come handy to help setting up the peer to peer connections. For instance STUN servers to help mobile clients behind NATs to connect to each other.
 
-## installation and setup
+## how to get going?
 
 - clone from github
 ```
@@ -28,7 +28,7 @@ vi my-services.json
 ## how to use it?
 - standalone server
     - after installing, change my-services.json and start the server with ```npm start``` and you are part of the peer-up network!
-     - you will see the ```peer-services.json``` over time being updated with services other peers offer.
+     - you should see ```peer-services.json``` over time being updated with services other peers offer
 
 
 - as part of your project 
