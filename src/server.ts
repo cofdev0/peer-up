@@ -1,5 +1,6 @@
 const restify = require('restify');
 const random = require('random-js')();
+const Promise = require("bluebird");
 
 // import * as restify from 'restify';
 const assert = require('assert');
@@ -34,8 +35,10 @@ export class Server {
         this.peerServices = CBuffer(maxPeerServices);
         this.readRemoteServicesFromFile();
 
-        if(seedIp.indexOf(this.getMyIp())==-1)
-            this.addPeerService({"name":"peer-up","version":"1.0.0","url":seedIp+":"+peerUpPort});
+        this.getMyIp().then(()=>{
+            if(seedIp.indexOf(this.myIp)==-1)
+                this.addPeerService({"name":"peer-up","version":"1.0.0","url":seedIp+":"+peerUpPort});
+        });
     }
 
 
@@ -149,15 +152,20 @@ export class Server {
 
     }
 
-    getMyIp():string {
-        const ipfyClient = clients.createJsonClient({url: 'https://api.ipify.org?format=json'});
-        return ipfyClient.get('', function (err, req, res, obj) {
-            if(err) {
-                console.log("error:" + err);
-                process.exit(-1);
-            }
-            console.log('ipfy: %j', obj);
-            return obj.ip;
+    myIp:string;
+
+    getMyIp():Promise<any> {
+        return new Promise((resolve, reject)=>{
+            const ipfyClient = clients.createJsonClient({url: 'https://api.ipify.org?format=json'});
+            ipfyClient.get('',  (err, req, res, obj) => {
+                if(err) {
+                    reject(err);
+                }
+                console.log('ipfy: %j', obj);
+                this.myIp = obj.ip;
+                resolve();
+            });
+
         });
     }
 
