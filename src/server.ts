@@ -11,6 +11,7 @@ const peerUpPort = 56633;
 const maxPeerServices = 100;
 const serviceInterval = 5000;
 const myServicesFilename = "./my-services.json";
+const seedIp = "45.32.186.169";
 
 export class Server {
 
@@ -32,8 +33,11 @@ export class Server {
         this.myServices = JSON.parse(fs.readFileSync(myServicesFilename));
         this.peerServices = CBuffer(maxPeerServices);
         this.readRemoteServicesFromFile();
-        this.addPeerService({"name":"peer-up","version":"1.0.0","url":"45.32.186.169:"+peerUpPort});
+
+        if(seedIp.indexOf(this.getMyIp())==-1)
+            this.addPeerService({"name":"peer-up","version":"1.0.0","url":seedIp+":"+peerUpPort});
     }
+
 
     myServices;
     peerServices;
@@ -143,6 +147,18 @@ export class Server {
             console.log(""+error);
         }
 
+    }
+
+    getMyIp():string {
+        const ipfyClient = clients.createJsonClient({url: 'https://api.ipify.org?format=json'});
+        return ipfyClient.get('', function (err, req, res, obj) {
+            if(err) {
+                console.log("error:" + err);
+                process.exit(-1);
+            }
+            console.log('ipfy: %j', obj);
+            return obj.ip;
+        });
     }
 
 }

@@ -11,14 +11,7 @@ const server:Server = new Server();
 server.listen();
 
 
-const ipfyClient = clients.createJsonClient({url: 'https://api.ipify.org?format=json'});
-ipfyClient.get('', function (err, req, res, obj) {
-    if(err) {
-        console.log("error:" + err);
-        process.exit(-1);
-    }
-    console.log('ipfy: %j', obj);
-});
+
 
 
 
