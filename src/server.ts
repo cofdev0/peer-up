@@ -10,7 +10,7 @@ const fs = require('fs-extra');
 
 const peerUpPort = 56633;
 const maxPeerServices = 100;
-const serviceInterval = 5000;
+const serviceInterval = 8000;
 const myServicesFilename:string = "./my-services.json";
 const peerServicesFilename:string = "./peer-services.json";
 const seedUrl:string = "http://45.32.186.169";
@@ -59,8 +59,8 @@ export class Server {
     onPost(req, res, next) {
         // let remote = req.headers['x-forwarded-for']  || req.connection.remoteAddress;
 
-        console.log("from ip "+req.connection.remoteAddress);
-        console.log("received post:\n"+JSON.stringify(req.params));
+        //console.log("from ip "+req.connection.remoteAddress);
+        //console.log("received post:\n"+JSON.stringify(req.params));
 
         if(req.params[postPeerUpKey]) {
             this.addPeerUpFromIncomingPost(req.params[postPeerUpKey]);
@@ -146,7 +146,7 @@ export class Server {
             client.post('/peer-up', {max:'3',[postPeerUpKey]:peerUpUrl},  (err, req, res, obj)=> {
                 if(!obj) return;
                 if(!obj.services) return;
-                console.log("peer server <"+peerUrl+"> returned obj: %j", obj);
+                //console.log("peer server <"+peerUrl+"> returned obj: %j", obj);
                 if(obj.services.constructor !== Array) return;
                 if(obj.services.length==0) return;
                 obj.services.forEach((entry)=>{
@@ -171,7 +171,7 @@ export class Server {
         if(this.isKnownPeerService(service)) return;
 
         this.peerServices.push(service);
-        console.log("added new peer service: "+JSON.stringify(service));
+        //console.log("added new peer service: "+JSON.stringify(service));
     }
 
     isKnownPeerService(service):boolean {
