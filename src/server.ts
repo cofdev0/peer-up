@@ -128,8 +128,8 @@ export class Server {
         try {
             client.post('/peer-up', {max:'5'},  (err, req, res, obj)=> {
                 if(!obj) return;
-                console.log("peer server <"+peerUrl+"> returned obj: %j", obj);
                 if(!obj.services) return;
+                console.log("peer server <"+peerUrl+"> returned obj: %j", obj);
                 if(obj.services.constructor !== Array) return;
                 if(obj.services.length==0) return;
                 obj.services.forEach((entry)=>{
