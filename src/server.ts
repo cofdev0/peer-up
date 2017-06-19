@@ -45,11 +45,19 @@ export class Server {
         this.readRemoteServicesFromFile();
 
         this.getMyIp().then(()=>{
-            if(seedUrl.indexOf(this.myIp)==-1)
+            if(!this.amISeed()) {
                 this.addPeerService({"name":"peer-up","version":"1.0.0","url":seedUrl});
+                this.onTimeToCheckForServices();
+            }
+        }).catch((err)=>{
+            console.log(err);
+            process.exit(-1);
         });
     }
 
+    amISeed():boolean {
+        return (seedUrl.indexOf(this.myIp)!=-1);
+    }
 
     serviceInterval;
     maxPeerServices;
@@ -179,6 +187,7 @@ export class Server {
         if(service.url.indexOf("localhost")!=-1) return;
         if(service.url.length==0) return;
         if(service.name.length==0) return;
+        if((service.name!=="peer-up") && this.amISeed()) return;
         if(this.isMyService(service)) return;
         if(this.isKnownPeerService(service)) return;
 
